@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body {
+  background: black;
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  flex-direction: column;
+}
+
+.container {
+  position: relative;
+  width: 220px;
+  height: 220px;
+}
+
+svg {
+  transform: rotate(-90deg);
+}
+
+circle {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
+}
+
+.background {
+  stroke: #222;
+}
+
+.progress {
+  stroke: white;
+  stroke-dasharray: 628;
+  stroke-dashoffset: 628;
+  transition: stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1);
+}
+
+.score {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 32px;
+}
+
+button {
+  margin-top: 40px;
+  padding: 14px 28px;
+  font-size: 16px;
+  background: white;
+  color: black;
+  border: none;
+  border-radius: 8px;
+}
+
+.product {
+  margin-top: 15px;
+  color: #888;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<svg width="220" height="220">
+
+  <circle
+    class="background"
+    cx="110"
+    cy="110"
+    r="100"
+  />
+
+  <circle
+    class="progress"
+    cx="110"
+    cy="110"
+    r="100"
+    id="progressCircle"
+  />
+
+</svg>
+
+<div class="score" id="score">
+0
+</div>
+
+</div>
+
+<button onclick="simulateScan()">
+Scan Product
+</button>
+
+<div class="product" id="productName">
+waiting...
+</div>
+
+<script>
+
+const circumference = 2 * Math.PI * 100;
+
+let totalImpact = 0;
+
+const maxImpact = 100;
+
+const products = {
+
+  "Coffee": 2.5,
+  "T-shirt": 4.0,
+  "Phone": 25,
+  "Shoes": 10,
+  "Bottle": 1.5
+
+};
+
+function simulateScan() {
+
+  const names = Object.keys(products);
+
+  const name =
+    names[Math.floor(Math.random() * names.length)];
+
+  const impact = products[name];
+
+  totalImpact += impact;
+
+  updateUI(name, impact);
+
+}
+
+function updateUI(name, impact) {
+
+  const percent =
+    Math.min(totalImpact / maxImpact, 1);
+
+  const offset =
+    circumference - (percent * circumference);
+
+  document
+    .getElementById("progressCircle")
+    .style.strokeDashoffset = offset;
+
+  document
+    .getElementById("score")
+    .innerText =
+    totalImpact.toFixed(1);
+
+  document
+    .getElementById("productName")
+    .innerText =
+    name + " +" + impact;
+
+}
+
+</script>
+
+</body>
+</html>
