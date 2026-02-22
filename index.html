@@ -52,9 +52,9 @@ circle {
 }
 
 button {
-  margin-top: 40px;
-  padding: 14px 28px;
-  font-size: 16px;
+  margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 14px;
   background: white;
   color: black;
   border: none;
@@ -98,47 +98,89 @@ button {
 </div>
 
 <button onclick="simulateScan()">
-Scan Product
+Test Scan
+</button>
+
+<button onclick="resetScore()">
+Reset
 </button>
 
 <div class="product" id="productName">
-waiting...
+waiting for scan...
 </div>
 
 <script>
 
-const circumference = 2 * Math.PI * 100;
-
-let totalImpact = 0;
-
+const radius = 100;
+const circumference = 2 * Math.PI * radius;
 const maxImpact = 100;
 
-const products = {
+// LOAD SAVED SCORE
+let totalImpact = parseFloat(localStorage.getItem("consumerIndex")) || 0;
 
-  "Coffee": 2.5,
-  "T-shirt": 4.0,
-  "Phone": 25,
-  "Shoes": 10,
-  "Bottle": 1.5
+// Set initial circle state
+updateCircle();
 
-};
+// READ NFC URL PARAMETERS
+const params = new URLSearchParams(window.location.search);
+const points = parseFloat(params.get("points"));
+const name = params.get("name");
 
-function simulateScan() {
+// If page opened from NFC sticker
+if(points && name){
 
-  const names = Object.keys(products);
+  totalImpact += points;
 
-  const name =
-    names[Math.floor(Math.random() * names.length)];
+  localStorage.setItem(
+    "consumerIndex",
+    totalImpact
+  );
 
-  const impact = products[name];
+  updateUI(name, points);
 
-  totalImpact += impact;
-
-  updateUI(name, impact);
+  // Remove parameters from URL after adding
+  window.history.replaceState({}, document.title, window.location.pathname);
 
 }
 
-function updateUI(name, impact) {
+// Manual test simulation
+function simulateScan(){
+
+  const products = {
+    "Coffee": 2.5,
+    "T-shirt": 4,
+    "Phone": 25,
+    "Shoes": 10,
+    "Bottle": 1.5
+  };
+
+  const names = Object.keys(products);
+  const randomName = names[Math.floor(Math.random() * names.length)];
+  const impact = products[randomName];
+
+  totalImpact += impact;
+
+  localStorage.setItem(
+    "consumerIndex",
+    totalImpact
+  );
+
+  updateUI(randomName, impact);
+
+}
+
+function updateUI(name, impact){
+
+  updateCircle();
+
+  document
+    .getElementById("productName")
+    .innerText =
+    name + " +" + impact;
+
+}
+
+function updateCircle(){
 
   const percent =
     Math.min(totalImpact / maxImpact, 1);
@@ -155,10 +197,21 @@ function updateUI(name, impact) {
     .innerText =
     totalImpact.toFixed(1);
 
+}
+
+// Reset button
+function resetScore(){
+
+  totalImpact = 0;
+
+  localStorage.removeItem("consumerIndex");
+
+  updateCircle();
+
   document
     .getElementById("productName")
     .innerText =
-    name + " +" + impact;
+    "reset";
 
 }
 
