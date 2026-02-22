@@ -74,36 +74,17 @@ button {
 
 <svg width="220" height="220">
 
-  <circle
-    class="background"
-    cx="110"
-    cy="110"
-    r="100"
-  />
-
-  <circle
-    class="progress"
-    cx="110"
-    cy="110"
-    r="100"
-    id="progressCircle"
-  />
+  <circle class="background" cx="110" cy="110" r="100" />
+  <circle class="progress" cx="110" cy="110" r="100" id="progressCircle" />
 
 </svg>
 
-<div class="score" id="score">
-0
-</div>
+<div class="score" id="score">0</div>
 
 </div>
 
-<button onclick="simulateScan()">
-Test Scan
-</button>
-
-<button onclick="resetScore()">
-Reset
-</button>
+<button onclick="simulateScan()">Test Scan</button>
+<button onclick="resetScore()">Reset</button>
 
 <div class="product" id="productName">
 waiting for scan...
@@ -115,44 +96,52 @@ const radius = 100;
 const circumference = 2 * Math.PI * radius;
 const maxImpact = 100;
 
-// LOAD SAVED SCORE
 let totalImpact = parseFloat(localStorage.getItem("consumerIndex")) || 0;
 
 updateCircle();
 
-// READ FROM HASH (#points=...&name=...)
-const hash = window.location.hash.substring(1);
-const params = new URLSearchParams(hash);
 
-const points = parseFloat(params.get("points"));
-const name = params.get("name");
+// 🔥 READ PRODUCT FROM URL PATH
+// Example:
+// /consumer_index/coffee-2.5
 
-// If page opened from NFC sticker
-if(points && name){
+const pathParts = window.location.pathname.split("/");
 
-  totalImpact += points;
+// Get last part
+const lastPart = pathParts[pathParts.length - 1];
 
-  localStorage.setItem(
-    "consumerIndex",
-    totalImpact
-  );
+// Check if it contains "-"
+if(lastPart.includes("-")){
 
-  updateUI(name, points);
+  const splitData = lastPart.split("-");
 
-  // Clear hash so refresh doesn't re-add
-  window.location.hash = "";
+  const name = splitData[0];
+  const points = parseFloat(splitData[1]);
+
+  if(!isNaN(points)){
+
+    totalImpact += points;
+
+    localStorage.setItem("consumerIndex", totalImpact);
+
+    updateUI(name, points);
+
+    // Clean URL back to main page
+    window.history.replaceState({}, document.title, "/consumer_index/");
+
+  }
 
 }
 
-// Manual test button
+
 function simulateScan(){
 
   const products = {
-    "Coffee": 2.5,
-    "T-shirt": 4,
-    "Phone": 25,
-    "Shoes": 10,
-    "Bottle": 1.5
+    coffee: 2.5,
+    tshirt: 4,
+    phone: 25,
+    shoes: 10,
+    bottle: 1.5
   };
 
   const names = Object.keys(products);
@@ -161,57 +150,44 @@ function simulateScan(){
 
   totalImpact += impact;
 
-  localStorage.setItem(
-    "consumerIndex",
-    totalImpact
-  );
+  localStorage.setItem("consumerIndex", totalImpact);
 
   updateUI(randomName, impact);
 
 }
 
+
 function updateUI(name, impact){
 
   updateCircle();
 
-  document
-    .getElementById("productName")
-    .innerText =
+  document.getElementById("productName").innerText =
     name + " +" + impact;
 
 }
 
+
 function updateCircle(){
 
-  const percent =
-    Math.min(totalImpact / maxImpact, 1);
+  const percent = Math.min(totalImpact / maxImpact, 1);
+  const offset = circumference - (percent * circumference);
 
-  const offset =
-    circumference - (percent * circumference);
-
-  document
-    .getElementById("progressCircle")
+  document.getElementById("progressCircle")
     .style.strokeDashoffset = offset;
 
-  document
-    .getElementById("score")
-    .innerText =
-    totalImpact.toFixed(1);
+  document.getElementById("score")
+    .innerText = totalImpact.toFixed(1);
 
 }
 
-// Reset button
+
 function resetScore(){
 
   totalImpact = 0;
-
   localStorage.removeItem("consumerIndex");
-
   updateCircle();
 
-  document
-    .getElementById("productName")
-    .innerText =
+  document.getElementById("productName").innerText =
     "reset";
 
 }
