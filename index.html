@@ -118,11 +118,12 @@ const maxImpact = 100;
 // LOAD SAVED SCORE
 let totalImpact = parseFloat(localStorage.getItem("consumerIndex")) || 0;
 
-// Set initial circle state
 updateCircle();
 
-// READ NFC URL PARAMETERS
-const params = new URLSearchParams(window.location.search);
+// READ FROM HASH (#points=...&name=...)
+const hash = window.location.hash.substring(1);
+const params = new URLSearchParams(hash);
+
 const points = parseFloat(params.get("points"));
 const name = params.get("name");
 
@@ -138,12 +139,12 @@ if(points && name){
 
   updateUI(name, points);
 
-  // Remove parameters from URL after adding
-  window.history.replaceState({}, document.title, window.location.pathname);
+  // Clear hash so refresh doesn't re-add
+  window.location.hash = "";
 
 }
 
-// Manual test simulation
+// Manual test button
 function simulateScan(){
 
   const products = {
