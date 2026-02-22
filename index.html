@@ -3,34 +3,15 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body {
-  background: black;
-  color: white;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  flex-direction: column;
-}
-.container {
-  position: relative;
-  width: 220px;
-  height: 220px;
-}
-svg {
-  transform: rotate(-90deg);
-}
-circle {
-  fill: none;
-  stroke-width: 12;
-  stroke-linecap: round;
-}
-.background { stroke: #222; }
-.progress { stroke: white; stroke-dasharray: 628; stroke-dashoffset: 628; transition: stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1); }
-.score { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; }
-button { margin-top: 20px; padding: 12px 24px; font-size: 14px; background: white; color: black; border: none; border-radius: 8px; }
-.product { margin-top: 15px; color: #888; }
+body { background:black;color:white;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column; }
+.container { position:relative;width:220px;height:220px; }
+svg { transform:rotate(-90deg); }
+circle { fill:none;stroke-width:12;stroke-linecap:round; }
+.background { stroke:#222; }
+.progress { stroke:white; stroke-dasharray:628; stroke-dashoffset:628; transition: stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1); }
+.score { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:32px; }
+button { margin-top:20px; padding:12px 24px; font-size:14px; background:white; color:black; border:none; border-radius:8px; }
+.product { margin-top:15px; color:#888; }
 </style>
 </head>
 <body>
@@ -50,50 +31,32 @@ button { margin-top: 20px; padding: 12px 24px; font-size: 14px; background: whit
 
 <script>
 const radius = 100;
-const circumference = 2 * Math.PI * radius;
+const circumference = 2*Math.PI*100;
 const maxImpact = 100;
 let totalImpact = parseFloat(localStorage.getItem("consumerIndex")) || 0;
 updateCircle();
 
-// 🔹 READ PARAMETERS FROM SEARCH (query string)
-const params = new URLSearchParams(window.location.search);
-const points = parseFloat(params.get("points"));
-const name = params.get("name");
-
-if(!isNaN(points) && name){
-  totalImpact += points;
-  localStorage.setItem("consumerIndex", totalImpact);
-  updateUI(name, points);
-  // clean URL so refresh doesn't re-add points
-  window.history.replaceState({}, document.title, window.location.pathname);
+// 🔹 READ PRODUCT FROM PATH AFTER index.html
+let path = decodeURIComponent(window.location.pathname);
+let parts = path.split('/');
+let lastPart = parts[parts.length-1]; // this will be 'coffee-2.5' from NFC
+if(lastPart && lastPart !== "index.html"){
+    const split = lastPart.split('-');
+    const name = split[0];
+    const points = parseFloat(split[1]);
+    if(!isNaN(points)){
+        totalImpact += points;
+        localStorage.setItem("consumerIndex", totalImpact);
+        updateUI(name, points);
+        // Clean URL so refresh doesn't re-add points
+        window.history.replaceState({}, document.title, "index.html");
+    }
 }
 
-function updateUI(name, impact){
-  updateCircle();
-  document.getElementById("productName").innerText = name + " +" + impact;
-}
-function updateCircle(){
-  const percent = Math.min(totalImpact / maxImpact, 1);
-  const offset = circumference - (percent * circumference);
-  document.getElementById("progressCircle").style.strokeDashoffset = offset;
-  document.getElementById("score").innerText = totalImpact.toFixed(1);
-}
-function resetScore(){
-  totalImpact = 0;
-  localStorage.removeItem("consumerIndex");
-  updateCircle();
-  document.getElementById("productName").innerText = "reset";
-}
-function simulateScan(){
-  const products = { "Coffee": 2.5, "T-shirt": 4, "Phone": 25, "Shoes": 10, "Bottle": 1.5 };
-  const names = Object.keys(products);
-  const randomName = names[Math.floor(Math.random() * names.length)];
-  const impact = products[randomName];
-  totalImpact += impact;
-  localStorage.setItem("consumerIndex", totalImpact);
-  updateUI(randomName, impact);
-}
+function updateUI(name,impact){ updateCircle(); document.getElementById("productName").innerText = name+" +"+impact; }
+function updateCircle(){ const percent=Math.min(totalImpact/maxImpact,1); const offset=circumference-(percent*circumference); document.getElementById("progressCircle").style.strokeDashoffset=offset; document.getElementById("score").innerText=totalImpact.toFixed(1); }
+function resetScore(){ totalImpact=0; localStorage.removeItem("consumerIndex"); updateCircle(); document.getElementById("productName").innerText="reset"; }
+function simulateScan(){ const products={coffee:2.5,tshirt:4,phone:25,shoes:10,bottle:1.5}; const names=Object.keys(products); const random=names[Math.floor(Math.random()*names.length)]; const impact=products[random]; totalImpact+=impact; localStorage.setItem("consumerIndex",totalImpact); updateUI(random,impact);}
 </script>
 </body>
 </html>
-
