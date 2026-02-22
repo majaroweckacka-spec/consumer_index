@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-
 body {
   background: black;
   color: white;
@@ -15,72 +13,34 @@ body {
   height: 100vh;
   flex-direction: column;
 }
-
 .container {
   position: relative;
   width: 220px;
   height: 220px;
 }
-
 svg {
   transform: rotate(-90deg);
 }
-
 circle {
   fill: none;
   stroke-width: 12;
   stroke-linecap: round;
 }
-
-.background {
-  stroke: #222;
-}
-
-.progress {
-  stroke: white;
-  stroke-dasharray: 628;
-  stroke-dashoffset: 628;
-  transition: stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1);
-}
-
-.score {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 32px;
-}
-
-button {
-  margin-top: 20px;
-  padding: 12px 24px;
-  font-size: 14px;
-  background: white;
-  color: black;
-  border: none;
-  border-radius: 8px;
-}
-
-.product {
-  margin-top: 15px;
-  color: #888;
-}
-
+.background { stroke: #222; }
+.progress { stroke: white; stroke-dasharray: 628; stroke-dashoffset: 628; transition: stroke-dashoffset 0.8s cubic-bezier(.4,0,.2,1); }
+.score { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; }
+button { margin-top: 20px; padding: 12px 24px; font-size: 14px; background: white; color: black; border: none; border-radius: 8px; }
+.product { margin-top: 15px; color: #888; }
 </style>
 </head>
 <body>
 
 <div class="container">
-
 <svg width="220" height="220">
-
-  <circle class="background" cx="110" cy="110" r="100" />
-  <circle class="progress" cx="110" cy="110" r="100" id="progressCircle" />
-
+  <circle class="background" cx="110" cy="110" r="100"/>
+  <circle class="progress" cx="110" cy="110" r="100" id="progressCircle"/>
 </svg>
-
 <div class="score" id="score">0</div>
-
 </div>
 
 <button onclick="simulateScan()">Test Scan</button>
@@ -89,72 +49,43 @@ button {
 <div class="product" id="productName">waiting for scan...</div>
 
 <script>
-
 const radius = 100;
 const circumference = 2 * Math.PI * radius;
 const maxImpact = 100;
-
-// Load saved score
 let totalImpact = parseFloat(localStorage.getItem("consumerIndex")) || 0;
-
 updateCircle();
 
-// 🔹 UNIVERSAL PARAMETER READER
-// Handles ?, %3F, #, %23
-let fullURL = decodeURIComponent(window.location.href);
-let paramString = "";
+// 🔹 READ PARAMETERS FROM SEARCH (query string)
+const params = new URLSearchParams(window.location.search);
+const points = parseFloat(params.get("points"));
+const name = params.get("name");
 
-// Detect parameter type
-if(fullURL.includes("?")) paramString = fullURL.split("?")[1];
-else if(fullURL.includes("%3F")) paramString = fullURL.split("%3F")[1];
-else if(fullURL.includes("#")) paramString = fullURL.split("#")[1];
-else if(fullURL.includes("%23")) paramString = fullURL.split("%23")[1];
-
-if(paramString){
-  const params = new URLSearchParams(paramString);
-  const points = parseFloat(params.get("points"));
-  const name = params.get("name");
-
-  if(!isNaN(points) && name){
-    totalImpact += points;
-    localStorage.setItem("consumerIndex", totalImpact);
-    updateUI(name, points);
-
-    // Clean URL so refresh doesn't re-add points
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
+if(!isNaN(points) && name){
+  totalImpact += points;
+  localStorage.setItem("consumerIndex", totalImpact);
+  updateUI(name, points);
+  // clean URL so refresh doesn't re-add points
+  window.history.replaceState({}, document.title, window.location.pathname);
 }
 
-// Update UI functions
 function updateUI(name, impact){
   updateCircle();
   document.getElementById("productName").innerText = name + " +" + impact;
 }
-
 function updateCircle(){
   const percent = Math.min(totalImpact / maxImpact, 1);
   const offset = circumference - (percent * circumference);
   document.getElementById("progressCircle").style.strokeDashoffset = offset;
   document.getElementById("score").innerText = totalImpact.toFixed(1);
 }
-
-// Reset function
 function resetScore(){
   totalImpact = 0;
   localStorage.removeItem("consumerIndex");
   updateCircle();
   document.getElementById("productName").innerText = "reset";
 }
-
-// Manual test button
 function simulateScan(){
-  const products = {
-    "Coffee": 2.5,
-    "T-shirt": 4,
-    "Phone": 25,
-    "Shoes": 10,
-    "Bottle": 1.5
-  };
+  const products = { "Coffee": 2.5, "T-shirt": 4, "Phone": 25, "Shoes": 10, "Bottle": 1.5 };
   const names = Object.keys(products);
   const randomName = names[Math.floor(Math.random() * names.length)];
   const impact = products[randomName];
@@ -162,8 +93,7 @@ function simulateScan(){
   localStorage.setItem("consumerIndex", totalImpact);
   updateUI(randomName, impact);
 }
-
 </script>
-
 </body>
 </html>
+
