@@ -58,8 +58,9 @@ if(paramString){
 function updateUI(name,impact){ updateCircle(); document.getElementById("productName").innerText = name+" +"+impact; }
 function updateCircle(){ const percent=Math.min(totalImpact/maxImpact,1); const offset=circumference-(percent*circumference); document.getElementById("progressCircle").style.strokeDashoffset=offset; document.getElementById("score").innerText=totalImpact.toFixed(1);}
 function resetScore(){ totalImpact=0; localStorage.removeItem("consumerIndex"); updateCircle(); document.getElementById("productName").innerText="reset";}
-function simulateScan(){ const products={coffee:2.5,tshirt:4,phone:25,shoes:10,bottle:1.5}; const names=Object.keys(products); const random=names[Math.floor(Math.random()*names.length)]; const impact=products[random]; totalImpact+=impact; localStorage.setItem("consumerIndex",totalImpact); updateUI(random,impact);}
+function simulateScan(){ const products={coffee:2.5,aluminium:10,UbertoCSM:25,shoes:10,bottle:1.5}; const names=Object.keys(products); const random=names[Math.floor(Math.random()*names.length)]; const impact=products[random]; totalImpact+=impact; localStorage.setItem("consumerIndex",totalImpact); updateUI(random,impact);}
 </script>
 
 </body>
 </html>
+
