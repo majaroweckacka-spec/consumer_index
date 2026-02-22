@@ -31,32 +31,35 @@ button { margin-top:20px; padding:12px 24px; font-size:14px; background:white; c
 
 <script>
 const radius = 100;
-const circumference = 2*Math.PI*100;
+const circumference = 2*Math.PI*radius;
 const maxImpact = 100;
 let totalImpact = parseFloat(localStorage.getItem("consumerIndex")) || 0;
 updateCircle();
 
-// 🔹 READ PRODUCT FROM PATH AFTER index.html
-let path = decodeURIComponent(window.location.pathname);
-let parts = path.split('/');
-let lastPart = parts[parts.length-1]; // this will be 'coffee-2.5' from NFC
-if(lastPart && lastPart !== "index.html"){
-    const split = lastPart.split('-');
-    const name = split[0];
-    const points = parseFloat(split[1]);
-    if(!isNaN(points)){
+// 🔹 UNIVERSAL QUERY PARAM HANDLER (works even if NFC encodes ? → %3F)
+let fullURL = decodeURIComponent(window.location.href);
+let paramString = "";
+if(fullURL.includes("?")) paramString = fullURL.split("?")[1];
+else if(fullURL.includes("%3F")) paramString = fullURL.split("%3F")[1];
+
+if(paramString){
+    const params = new URLSearchParams(paramString);
+    const points = parseFloat(params.get("points"));
+    const name = params.get("name");
+    if(!isNaN(points) && name){
         totalImpact += points;
         localStorage.setItem("consumerIndex", totalImpact);
         updateUI(name, points);
-        // Clean URL so refresh doesn't re-add points
+        // clean URL so refresh doesn't re-add points
         window.history.replaceState({}, document.title, "index.html");
     }
 }
 
 function updateUI(name,impact){ updateCircle(); document.getElementById("productName").innerText = name+" +"+impact; }
-function updateCircle(){ const percent=Math.min(totalImpact/maxImpact,1); const offset=circumference-(percent*circumference); document.getElementById("progressCircle").style.strokeDashoffset=offset; document.getElementById("score").innerText=totalImpact.toFixed(1); }
-function resetScore(){ totalImpact=0; localStorage.removeItem("consumerIndex"); updateCircle(); document.getElementById("productName").innerText="reset"; }
+function updateCircle(){ const percent=Math.min(totalImpact/maxImpact,1); const offset=circumference-(percent*circumference); document.getElementById("progressCircle").style.strokeDashoffset=offset; document.getElementById("score").innerText=totalImpact.toFixed(1);}
+function resetScore(){ totalImpact=0; localStorage.removeItem("consumerIndex"); updateCircle(); document.getElementById("productName").innerText="reset";}
 function simulateScan(){ const products={coffee:2.5,tshirt:4,phone:25,shoes:10,bottle:1.5}; const names=Object.keys(products); const random=names[Math.floor(Math.random()*names.length)]; const impact=products[random]; totalImpact+=impact; localStorage.setItem("consumerIndex",totalImpact); updateUI(random,impact);}
 </script>
+
 </body>
 </html>
